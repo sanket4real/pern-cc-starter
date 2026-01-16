@@ -7,6 +7,13 @@ const router = express.Router();
 
 app.use(express.json());
 
+app.use((req, res, next) => {
+	const timeStamp = new Date().toISOString();
+
+	console.log(`[${timeStamp}] ${req.method} ${req.url}`);
+	next();
+});
+
 let cars = [
 	{ id: 1, make: "Toyota", model: "Fortuner", year: 2022, price: 300000 },
 	{ id: 2, make: "Honda", model: "City", year: 2012, price: 150000 },
@@ -56,7 +63,16 @@ router.put("/:id", (req, res) => {
 });
 
 router.delete("/:id", (req, res) => {
-	res.send("Deleted the car");
+	const id = Number(req.params.id);
+	const index = cars.findIndex((car) => car.id === id);
+
+	if (index === -1) {
+		return res.status(404).json({ error: "Car Not Found" });
+	}
+
+	const deleted = cars.splice(index, 1)[0];
+
+	res.json({ message: "Car Deleted", car: deleted });
 });
 
 app.use("/api/v1/cars", router);
