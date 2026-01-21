@@ -1,4 +1,6 @@
 import express from "express";
+import { cars } from "../03_postgresql/schema.js";
+import { db } from "../03_postgresql/db.js";
 
 const app = express();
 const port = 3000;
@@ -14,23 +16,15 @@ app.use((req, res, next) => {
 	next();
 });
 
-let cars = [
-	{ id: 1, make: "Toyota", model: "Fortuner", year: 2022, price: 300000 },
-	{ id: 2, make: "Honda", model: "City", year: 2012, price: 150000 },
-	{ id: 3, make: "Hyundai", model: "i10", year: 2014, price: 130000 },
-	{ id: 4, make: "TATA", model: "Harrier", year: 2024, price: 1000000 },
-];
-
 app.get("/", (req, res) => {
 	res.send("Hello from the cars api");
 });
 
-router.get("/", (req, res) => {
-	if (!cars) res.status(404).send("No car Data Found");
+router.get("/cars", (req, res) => {
 	res.json(cars);
 });
 
-router.get("/:id", (req, res) => {
+router.get("/cars/:id", (req, res) => {
 	const id = Number(req.params.id);
 	const car = cars.find((car) => car.id === id);
 
@@ -39,26 +33,22 @@ router.get("/:id", (req, res) => {
 	res.send(car);
 });
 
-router.post("/", (req, res) => {
+router.post("/cars", async (req, res) => {
 	const { make, model, year, price } = req.body;
 
 	if (!make || !model || !year || !price) {
 		return res.status(400).json({ error: "Missing Car Data" });
 	}
 
-	const newCar = {
-		id: cars.length + 1,
-		make,
-		model,
-		year,
-		price,
-	};
+	const [newCar] = await db
+		.insert(cars)
+		.values({ make, model, year, price })
+		.returning();
 
-	cars.push(newCar);
 	res.status(201).json(newCar);
 });
 
-router.put("/:id", (req, res) => {
+router.put("/cars/:id", (req, res) => {
 	res.send("Updated the car");
 });
 
