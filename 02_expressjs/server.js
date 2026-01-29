@@ -20,11 +20,13 @@ app.get("/", (req, res) => {
 	res.send("Hello from the cars api");
 });
 
-router.get("/cars", (req, res) => {
-	res.json(cars);
+router.get("/", async (req, res) => {
+	const allCars = await db.select().from(cars);
+
+	res.json(allCars);
 });
 
-router.get("/cars/:id", (req, res) => {
+router.get("/:id", (req, res) => {
 	const id = Number(req.params.id);
 	const car = cars.find((car) => car.id === id);
 
@@ -33,7 +35,7 @@ router.get("/cars/:id", (req, res) => {
 	res.send(car);
 });
 
-router.post("/cars", async (req, res) => {
+router.post("/", async (req, res) => {
 	const { make, model, year, price } = req.body;
 
 	if (!make || !model || !year || !price) {
@@ -48,7 +50,7 @@ router.post("/cars", async (req, res) => {
 	res.status(201).json(newCar);
 });
 
-router.put("/cars/:id", (req, res) => {
+router.put("/:id", (req, res) => {
 	res.send("Updated the car");
 });
 
@@ -68,5 +70,5 @@ router.delete("/:id", (req, res) => {
 app.use("/api/v1/cars", router);
 
 app.listen(port, () =>
-	console.log(`Server is running on http://localhost:${port}`)
+	console.log(`Server is running on http://localhost:${port}`),
 );
